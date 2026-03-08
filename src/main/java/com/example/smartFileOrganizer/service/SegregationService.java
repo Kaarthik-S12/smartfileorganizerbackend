@@ -3,49 +3,59 @@ package com.example.smartFileOrganizer.service;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class SegregationService {
 
+    private static final Set<String> IMAGE_EXT =
+            Set.of("jpg","jpeg","png","gif","bmp","webp");
+
+    private static final Set<String> DOC_EXT =
+            Set.of("pdf","doc","docx","txt","xls","xlsx","ppt","pptx");
+
+    private static final Set<String> VIDEO_EXT =
+            Set.of("mp4","mkv","avi","mov");
+
+    private static final Set<String> ARCHIVE_EXT =
+            Set.of("zip","rar","7z","tar","gz");
+
     public void segregate(String scanPath,
                           Map<String,String> destMap,
                           List<String> allowedPaths){
+      System.out.println("enter");
+        File folder = new File(scanPath);
+        File[] files = folder.listFiles();
 
-        File folder=new File(scanPath);
+        if(files == null) return;
 
-        File[] files=folder.listFiles();
-
-        if(files==null) return;
-
-        for(File file:files){
+        for(File file : files){
 
             if(file.isFile()){
 
-                String name=file.getName();
+                String name = file.getName();
 
-                int dot=name.lastIndexOf(".");
+                int dot = name.lastIndexOf(".");
+                String ext = "";
 
-                String ext="";
-
-                if(dot>0){
-                    ext=name.substring(dot+1);
+                if(dot > 0){
+                    ext = name.substring(dot + 1).toLowerCase();
                 }
 
-                if(destMap.containsKey(ext)){
+                String category = getCategory(ext);
 
-                    String destPath=destMap.get(ext);
+                if(destMap.containsKey(category)){
 
-                    if(destPath==null || destPath.isEmpty())
+                    String destPath = destMap.get(category);
+
+                    if(destPath == null || destPath.isEmpty())
                         continue;
 
-                    boolean allowed=false;
+                    boolean allowed = false;
 
-                    for(String path:allowedPaths){
-
+                    for(String path : allowedPaths){
                         if(destPath.startsWith(path)){
-                            allowed=true;
+                            allowed = true;
                             break;
                         }
                     }
@@ -55,13 +65,29 @@ public class SegregationService {
                                 "Destination path not allowed");
                     }
 
-                    File destFolder=new File(destPath);
-
+                    File destFolder = new File(destPath);
                     destFolder.mkdirs();
 
                     file.renameTo(new File(destFolder,name));
                 }
             }
         }
+    }
+
+    private String getCategory(String ext){
+
+        if(IMAGE_EXT.contains(ext))
+            return "images";
+
+        if(DOC_EXT.contains(ext))
+            return "documents";
+
+        if(VIDEO_EXT.contains(ext))
+            return "videos";
+
+        if(ARCHIVE_EXT.contains(ext))
+            return "archives";
+
+        return "others";
     }
 }
