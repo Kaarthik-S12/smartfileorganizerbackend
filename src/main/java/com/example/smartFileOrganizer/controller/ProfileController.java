@@ -1,9 +1,12 @@
 package com.example.smartFileOrganizer.controller;
 
-import com.example.smartFileOrganizer.service.ProfileService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
 import com.example.smartFileOrganizer.entity.Profile;
+import com.example.smartFileOrganizer.repository.UserRepository;
+import com.example.smartFileOrganizer.service.ProfileService;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/profile")
@@ -12,23 +15,47 @@ public class ProfileController {
     @Autowired
     private ProfileService profileService;
 
-    @PostMapping("/{userId}")
-    public Profile create(@PathVariable Long userId,
-                          @RequestBody Profile profile){
+    @Autowired
+    private UserRepository userRepository;
 
-        return profileService.createProfile(userId,profile);
+    // helper method to get logged-in userId
+    private Long getLoggedUserId(){
+
+        String email = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getName();
+
+        return userRepository
+                .findByEmail(email)
+                .orElseThrow()
+                .getId();
     }
 
-    @GetMapping("/{userId}")
-    public Profile get(@PathVariable Long userId){
+    // Create profile
+    @PostMapping
+    public Profile create(@RequestBody Profile profile){
+
+        Long userId = getLoggedUserId();
+
+        return profileService.createProfile(userId, profile);
+    }
+
+    // Get profile
+    @GetMapping
+    public Profile get(){
+
+        Long userId = getLoggedUserId();
 
         return profileService.getProfile(userId);
     }
 
-    @PutMapping("/{userId}")
-    public Profile update(@PathVariable Long userId,
-                          @RequestBody Profile profile){
+    // Update profile
+    @PutMapping
+    public Profile update(@RequestBody Profile profile){
 
-        return profileService.updateProfile(userId,profile);
+        Long userId = getLoggedUserId();
+
+        return profileService.updateProfile(userId, profile);
     }
 }

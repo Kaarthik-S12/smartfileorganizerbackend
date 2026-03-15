@@ -3,6 +3,7 @@ package com.example.smartFileOrganizer.service;
 import com.example.smartFileOrganizer.entity.User;
 import com.example.smartFileOrganizer.entity.AllowedPath;
 import com.example.smartFileOrganizer.repository.AllowedPathRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -39,9 +40,9 @@ public class SettingsService {
 
         return repository.findByUserId(userId);
     }
-
+    @Transactional
     public void deletePath(Long id){
 
-        repository.deleteById(id);
+        repository.deleteByUserId(id);
     }
 }

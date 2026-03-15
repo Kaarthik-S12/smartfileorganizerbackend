@@ -10,4 +10,5 @@ import java.util.List;
 public interface AllowedPathRepository extends JpaRepository<AllowedPath,Long> {
 
     List<AllowedPath> findByUserId(Long userId);
+    void deleteByUserId(Long userId);
 }
